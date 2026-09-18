@@ -1,4 +1,4 @@
 {
-    "erp_tool_url": "http://172.16.2.100/anon_mk/hs/ai/mcpTools",
-    "erp_call_url": "http://172.16.2.100/anon_mk/hs/ai/mcpCall"
+    "erp_tool_url": "http://<erp_server_ip>/<erp_server_base>/hs/ai/mcpTools",
+    "erp_call_url": "http://<erp_server_ip>/<erp_server_base>/hs/ai/mcpCall"
 }
