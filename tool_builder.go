@@ -42,8 +42,16 @@ func buildToolParam(name string, param ToolParam) mcp.ToolOption {
 		return mcp.WithBoolean(name, opts...)
 
 	case "array":
-		// array of objects
-		itemsSchema := buildObjectSchema(param.Items)
+		var itemsSchema map[string]any
+
+		if param.ItemType != "" {
+			itemsSchema = map[string]any{
+				"type": param.ItemType,
+			}
+		} else {
+			itemsSchema = buildObjectSchema(param.Items)
+		}
+
 		opts = append(opts, mcp.Items(itemsSchema))
 		return mcp.WithArray(name, opts...)
 

@@ -26,6 +26,7 @@ type ToolParam struct {
 	Required    bool                 `json:"required"`
 	Description string               `json:"description"`
 	Items       map[string]ToolParam `json:"items,omitempty"` // для array
+	ItemType    string               `json:"itemType"`        // для array
 }
 
 type ToolSpec struct {
@@ -150,5 +151,6 @@ func CallToolsFromERP(cfg Config, ctx context.Context, req mcp.CallToolRequest) 
 		return mcp.NewToolResultError(string(body)), nil
 	}
 	// Возвращаем MCP результат
-	return mcp.NewToolResultText(string(body)), nil
+	return mcp.NewToolResultJSON(json.RawMessage(body))
+	//return mcp.NewToolResultText(string(body)), nil
 }

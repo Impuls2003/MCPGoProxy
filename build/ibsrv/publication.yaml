@@ -1,0 +1,16 @@
+server:
+  address: localhost
+  port: 8314
+database:
+  path: e:\DEV\MCPGoProxy\build\ib
+infobase:
+  name: DefAlias
+  distribute-licenses: yes
+http:
+  - base: /ib
+    odata:
+      publish: yes
+    web-services:
+      publish-by-default: yes
+    http-services:
+      publish-by-default: yes
