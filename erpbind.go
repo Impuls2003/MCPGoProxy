@@ -21,6 +21,20 @@ type Config struct {
 	ERP_call_url string `json:"erp_call_url"`
 }
 
+// ToolParam описывает один параметр инструмента в промежуточном формате,
+// полученном из ERP.
+//
+// Структура намеренно не является JSON Schema. Это внутреннее представление,
+// которое используется MCP-прокси для преобразования описания инструмента,
+// полученного от 1С, в MCP inputSchema.
+//
+// Для простых типов используется Type.
+// Для массивов:
+//   - ItemType — тип элементов простого массива;
+//   - Items — описание полей объекта, если элементы массива являются объектами.
+//
+// Items может содержать вложенные ToolParam, поэтому структура поддерживает
+// массивы объектов и другие вложенные структуры.
 type ToolParam struct {
 	Type        string               `json:"type"`
 	Required    bool                 `json:"required"`
@@ -29,6 +43,10 @@ type ToolParam struct {
 	ItemType    string               `json:"itemType"`        // для array
 }
 
+// ToolSpec описывает MCP-инструмент в промежуточном представлении.
+//
+// Description и Parameters формируются на основании описания инструмента,
+// полученного от ERP.
 type ToolSpec struct {
 	Name        string               `json:"name"`
 	Description string               `json:"description"`

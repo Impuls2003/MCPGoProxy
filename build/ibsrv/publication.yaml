@@ -12,5 +12,7 @@ http:
       publish: yes
     web-services:
       publish-by-default: yes
+      publish-extensions-by-default: yes
     http-services:
       publish-by-default: yes
+      publish-extensions-by-default: yes
