@@ -143,12 +143,12 @@ http://127.0.0.1:40242/mcp
 
 ### Параметры конфигурации
 
-**erp_tool_url** - HTTP endpoint ERP для получения списка доступных MCP-инструментов и их описаний
-**erp_call_url** - HTTP endpoint ERP для выполнения вызова выбранного инструмента
-**http_host** - Адрес, на котором MCPGoProxy запускает HTTP-сервер
-**http_port** - Порт HTTP-сервера MCPGoProxy
-**disable_localhost_protection** - Отключает проверку localhost для HTTP-сервера. Может потребоваться при подключении клиентов, работающих в Docker или другой изолированной среде
-**http_host**, **http_port** и **disable_localhost_protection** используются только в режиме `--http`.
+* **erp_tool_url** - HTTP endpoint ERP для получения списка доступных MCP-инструментов и их описаний
+* **erp_call_url** - HTTP endpoint ERP для выполнения вызова выбранного инструмента
+* **http_host** - Адрес, на котором MCPGoProxy запускает HTTP-сервер
+* **http_port** - Порт HTTP-сервера MCPGoProxy
+* **disable_localhost_protection** - Отключает проверку localhost для HTTP-сервера. Может потребоваться при подключении клиентов, работающих в Docker или другой изолированной среде
+* **http_host**, **http_port** и **disable_localhost_protection** используются только в режиме `--http`.
 
 ### HTTP API ERP
 
