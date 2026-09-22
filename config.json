@@ -1,4 +1,6 @@
 {
     "erp_tool_url": "http://172.16.2.100/anon_mk/hs/ai/mcpTools",
-    "erp_call_url": "http://172.16.2.100/anon_mk/hs/ai/mcpCall"
+    "erp_call_url": "http://172.16.2.100/anon_mk/hs/ai/mcpCall",
+    "http_host": "127.0.0.1",
+    "http_port": 40242
 }

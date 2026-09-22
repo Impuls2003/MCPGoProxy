@@ -24,6 +24,10 @@ func buildTool(spec ToolSpec) mcp.Tool {
 		mcp.WithDescription(spec.Description),
 	}
 
+	if len(spec.Parameters) == 0 {
+		opts = append(opts, mcp.WithInputSchema[struct{}]())
+	}
+
 	for paramName, param := range spec.Parameters {
 		opts = append(opts, buildToolParam(paramName, param))
 	}
