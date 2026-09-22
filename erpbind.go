@@ -16,11 +16,12 @@ import (
 
 // Config описывает настройки
 type Config struct {
-	ApiKey       string
-	ERP_tool_url string `json:"erp_tool_url"`
-	ERP_call_url string `json:"erp_call_url"`
-	HTTPHost     string `json:"http_host"`
-	HTTPPort     int    `json:"http_port"`
+	ApiKey                     string
+	ERP_tool_url               string `json:"erp_tool_url"`
+	ERP_call_url               string `json:"erp_call_url"`
+	HTTPHost                   string `json:"http_host"`
+	HTTPPort                   int    `json:"http_port"`
+	DisableLocalhostProtection bool   `json:"disable_localhost_protection"`
 }
 
 // ToolParam описывает один параметр инструмента в промежуточном формате,

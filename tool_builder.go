@@ -11,6 +11,8 @@ package main
 // ERP JSON → ToolSpec → MCP Tool → JSON Schema → LLM
 
 import (
+	"encoding/json"
+
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
@@ -20,12 +22,20 @@ import (
 // Вложенная структура параметров преобразуется в JSON Schema рекурсивно.
 func buildTool(spec ToolSpec) mcp.Tool {
 
-	opts := []mcp.ToolOption{
-		mcp.WithDescription(spec.Description),
+	if len(spec.Parameters) == 0 {
+		return mcp.NewToolWithRawSchema(
+			spec.Name,
+			spec.Description,
+			json.RawMessage(`{
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			}`),
+		)
 	}
 
-	if len(spec.Parameters) == 0 {
-		opts = append(opts, mcp.WithInputSchema[struct{}]())
+	opts := []mcp.ToolOption{
+		mcp.WithDescription(spec.Description),
 	}
 
 	for paramName, param := range spec.Parameters {

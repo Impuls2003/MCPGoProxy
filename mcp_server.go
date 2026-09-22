@@ -14,8 +14,9 @@ func main() {
 	// Создание MCP сервера
 	s := server.NewMCPServer(
 		"Dynamic MCP Proxy to 1C",
-		"1.0.0",
+		"1.1.0",
 		server.WithToolCapabilities(false),
+		server.WithInputSchemaValidation(),
 	)
 
 	// Загружаем конфигурацию
@@ -50,11 +51,16 @@ func main() {
 }
 
 func serveHTTP(s *server.MCPServer, cfg Config) error {
-	httpServer := server.NewStreamableHTTPServer(s)
-
-	return httpServer.Start(
-		cfg.HTTPHost + ":" + strconv.Itoa(cfg.HTTPPort),
+	httpServer := server.NewStreamableHTTPServer(
+		s,
+		server.WithDisableLocalhostProtection(cfg.DisableLocalhostProtection),
 	)
+
+	addr := cfg.HTTPHost + ":" + strconv.Itoa(cfg.HTTPPort)
+
+	fmt.Println("Streamable HTTP server:", addr+"/mcp")
+
+	return httpServer.Start(addr)
 }
 
 func isStdioOnly() bool {
