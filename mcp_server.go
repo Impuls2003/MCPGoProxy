@@ -22,31 +22,43 @@ func main() {
 	// Загружаем конфигурацию
 	cfg := LoadConfig()
 
-	handler := func(cfg Config) func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			return CallToolsFromERP(cfg, ctx, req)
-		}
-	}(cfg) // захватываем cfg
+	handler := createToolHandler(cfg) // захватываем cfg
 
 	tools := GetToolsFromERP(cfg)
 
 	for _, spec := range tools {
 		tool := buildTool(spec)
-		s.AddTool(tool, handler)
+		s.AddTool(tool, handler) // Для всех инструментов делаем один обработчик. Всю магию проксирования будет выполнять CallToolsFromERP
 	}
 
-	// HTTP запускаем только если не указан --stdio-only.
-	if !isStdioOnly() {
-		go func() {
-			if err := serveHTTP(s, cfg); err != nil {
-				fmt.Println("HTTP server error:", err)
-				os.Exit(1)
-			}
-		}()
+	// Определяем режим запуска
+	switch getRunMode() {
+	case "stdio":
+		if err := server.ServeStdio(s); err != nil {
+			fmt.Println(err)
+		}
+	case "http":
+		if err := serveHTTP(s, cfg); err != nil {
+			fmt.Println("HTTP server error:", err)
+			os.Exit(1)
+		}
 	}
+}
 
-	if err := server.ServeStdio(s); err != nil {
-		fmt.Println(err)
+// createToolHandler создает обработчик вызовов MCP-инструментов,
+// привязанный к конфигурации прокси.
+//
+// Конфигурация замыкается во внутренней функции и поэтому
+// доступна при последующих вызовах MCP без передачи ее в запросе.
+// Упрощенно:
+//
+//	cfg → handler(cfg) → func(ctx, req) → CallToolsFromERP(cfg, ctx, req)
+//
+// Вызов "(cfg)" в конце сразу выполняет внешнюю функцию и получает
+// готовый обработчик.
+func createToolHandler(cfg Config) func(context.Context, mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		return CallToolsFromERP(cfg, ctx, req)
 	}
 }
 
@@ -63,12 +75,15 @@ func serveHTTP(s *server.MCPServer, cfg Config) error {
 	return httpServer.Start(addr)
 }
 
-func isStdioOnly() bool {
+func getRunMode() string {
 	for _, arg := range os.Args[1:] {
-		if arg == "--stdio-only" {
-			return true
+		switch arg {
+		case "--stdio":
+			return "stdio"
+		case "--http":
+			return "http"
 		}
 	}
 
-	return false
+	return "stdio"
 }

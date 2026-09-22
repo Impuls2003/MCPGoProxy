@@ -20,7 +20,7 @@ Write-Host ""
 
 Set-Location $DebugDir
 
-& $Exe
+& $Exe --http
 
 $ExitCode = $LASTEXITCODE
 
