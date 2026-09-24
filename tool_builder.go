@@ -96,6 +96,8 @@ func buildToolParam(name string, param ToolParam) mcp.ToolOption {
 				property["required"] = required
 			}
 		}
+	case "any":
+		return mcp.WithAny(name, opts...)
 	default:
 		panic("unsupported param type: " + param.Type)
 	}
@@ -116,8 +118,10 @@ func buildToolParam(name string, param ToolParam) mcp.ToolOption {
 //	      -> object
 //	         -> ...
 func buildSchema(param ToolParam) map[string]any {
-	schema := map[string]any{
-		"type": param.Type,
+	schema := map[string]any{}
+
+	if param.Type != "" && param.Type != "any" {
+		schema["type"] = param.Type
 	}
 
 	if param.Description != "" {
@@ -127,14 +131,7 @@ func buildSchema(param ToolParam) map[string]any {
 	switch param.Type {
 
 	case "array":
-		if param.ItemType != "" {
-			schema["items"] = map[string]any{
-				"type": param.ItemType,
-			}
-		} else {
-			schema["items"] = buildObjectSchema(param.Items)
-		}
-
+		schema["items"] = buildSchemaItems(param)
 	case "object":
 		objectSchema := buildObjectSchema(param.Items)
 
@@ -178,6 +175,10 @@ func buildObjectSchema(fields map[string]ToolParam) map[string]any {
 
 func buildSchemaItems(param ToolParam) map[string]any {
 	if param.ItemType != "" {
+		if param.ItemType == "any" {
+			return map[string]any{}
+		}
+
 		return map[string]any{
 			"type": param.ItemType,
 		}
