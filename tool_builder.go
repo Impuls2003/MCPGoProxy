@@ -77,7 +77,25 @@ func buildToolParam(name string, param ToolParam) mcp.ToolOption {
 	case "array":
 		opts = append(opts, mcp.Items(buildSchemaItems(param)))
 		return mcp.WithArray(name, opts...)
+	case "object":
+		objectSchema := buildSchemaItems(param)
 
+		opts = append(
+			opts,
+			mcp.Properties(objectSchema["properties"].(map[string]any)),
+		)
+
+		objectOption := mcp.WithObject(name, opts...)
+
+		return func(tool *mcp.Tool) {
+			objectOption(tool)
+
+			// Сохраняем required дочерних полей отдельно от required самого объекта.
+			if required, ok := objectSchema["required"]; ok {
+				property := tool.InputSchema.Properties[name].(map[string]any)
+				property["required"] = required
+			}
+		}
 	default:
 		panic("unsupported param type: " + param.Type)
 	}
