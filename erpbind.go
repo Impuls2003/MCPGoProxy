@@ -3,13 +3,17 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
 )
@@ -171,7 +175,47 @@ func CallToolsFromERP(cfg Config, ctx context.Context, req mcp.CallToolRequest) 
 	if resp.StatusCode != 200 {
 		return mcp.NewToolResultError(string(body)), nil
 	}
+
+	// Получаем переданный Content-Type. По умолчанию octet-stream
+	contentType, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	if err != nil || contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	fileName := "unnamed_file"
+
+	// Имя файла
+	if _, params, err := mime.ParseMediaType(resp.Header.Get("Content-Disposition")); err == nil {
+		if name := params["filename"]; name != "" {
+			fileName = name
+		}
+	}
+
+	// От Content-Type зависит как мы будем возвращать результат модели
 	// Возвращаем MCP результат
-	return mcp.NewToolResultJSON(json.RawMessage(body))
+	switch {
+	case strings.HasPrefix(contentType, "image/"):
+		imageData := base64.StdEncoding.EncodeToString(body)
+		return mcp.NewToolResultImage(fileName, imageData, contentType), nil
+
+	case contentType == "application/json" || strings.HasSuffix(contentType, "+json"):
+		return mcp.NewToolResultJSON(json.RawMessage(body))
+
+	case strings.HasPrefix(contentType, "text/"):
+		return mcp.NewToolResultText(string(body)), nil
+
+	default:
+		fileData := base64.StdEncoding.EncodeToString(body)
+
+		return mcp.NewToolResultResource(
+			fileName,
+			mcp.BlobResourceContents{
+				URI:      "erp://files/" + url.PathEscape(fileName),
+				MIMEType: contentType,
+				Blob:     fileData,
+			},
+		), nil
+	}
+	//return mcp.NewToolResultJSON(json.RawMessage(body))
+	//return mcp.NewToolResultImage()
 	//return mcp.NewToolResultText(string(body)), nil
 }
