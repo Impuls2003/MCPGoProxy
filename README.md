@@ -527,6 +527,16 @@ mcp_server.exe --http
 
 > **Важно:** `ERP_API_KEY` содержит секрет для доступа к ERP. Не помещайте действующий ключ в `config.json`, исходный код или публичные репозитории.
 
+##### Установка службы:
+
+```powershell
+.\mcp_server.exe --install-service
+```
+##### Удаление службы:
+
+```powershell
+.\mcp_server.exe --uninstall-service
+```
 
 ## Пример подключения к LM Studio
 
@@ -586,5 +596,6 @@ go build -o mcp_server.exe
 * поддержка сложных вложенных JSON Schema;
 * вызов инструментов ERP через HTTP;
 * структурированные результаты MCP;
+* установка прокси как службы windows
 * проверена работа с LM Studio;
 * проверена работа с Open WebUI.
