@@ -21,11 +21,13 @@ import (
 // Config описывает настройки
 type Config struct {
 	ApiKey                     string
-	ERP_tool_url               string `json:"erp_tool_url"`
-	ERP_call_url               string `json:"erp_call_url"`
-	HTTPHost                   string `json:"http_host"`
-	HTTPPort                   int    `json:"http_port"`
-	DisableLocalhostProtection bool   `json:"disable_localhost_protection"`
+	ERP_tool_url               string            `json:"erp_tool_url"`
+	ERP_call_url               string            `json:"erp_call_url"`
+	HTTPHost                   string            `json:"http_host"`
+	HTTPPort                   int               `json:"http_port"`
+	DisableLocalhostProtection bool              `json:"disable_localhost_protection"`
+	UserHeaders                map[string]string `json:"user_headers"`
+	ForwardHeaders             []string          `json:"forward_headers"`
 }
 
 // ToolParam описывает один параметр инструмента в промежуточном формате,
@@ -89,9 +91,6 @@ func LoadConfig() Config {
 	cfg.ApiKey = os.Getenv("ERP_API_KEY")
 
 	// Проверяем чтобы все переменные были загружены из config
-	if cfg.ApiKey == "" {
-		log.Fatal("ERP_API_KEY not set. Please add env in the mcp client.")
-	}
 
 	if cfg.ERP_tool_url == "" {
 		log.Fatal("erp_tool_url not set.")
@@ -107,17 +106,20 @@ func LoadConfig() Config {
 func GetToolsFromERP(cfg Config) []ToolSpec {
 
 	// Создаем новый запрос
-	req, err := http.NewRequest("POST", cfg.ERP_tool_url, nil)
+	request, err := http.NewRequest("POST", cfg.ERP_tool_url, nil)
 	if err != nil {
 		log.Fatal("HTTP Request not created.")
 	}
 
 	// Устанавливаем заголовок с типом данных в теле запроса
-	req.Header.Set("Authorization", cfg.ApiKey)
+	request.Header.Set("Authorization", cfg.ApiKey)
+
+	// Добавляем пользовательские заголовки
+	addUserHeadersToRequest(request, cfg)
 
 	// Выполняем запрос
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := client.Do(request)
 	if err != nil {
 		fmt.Println(err)
 		log.Fatal("HTTP Request not created.")
@@ -158,8 +160,12 @@ func CallToolsFromERP(cfg Config, ctx context.Context, req mcp.CallToolRequest) 
 		return mcp.NewToolResultError(err.Error()), nil
 	}
 
-	// Устанавливаем заголовок с типом данных в теле запроса
-	request.Header.Set("Authorization", cfg.ApiKey)
+	// Добавляем пользовательские заголовки
+	addUserHeadersToRequest(request, cfg)
+
+	// Ретранслируем заголовки
+	addHeadersToRequest(request, cfg, req.Header)
+
 	request.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
@@ -215,7 +221,42 @@ func CallToolsFromERP(cfg Config, ctx context.Context, req mcp.CallToolRequest) 
 			},
 		), nil
 	}
-	//return mcp.NewToolResultJSON(json.RawMessage(body))
-	//return mcp.NewToolResultImage()
-	//return mcp.NewToolResultText(string(body)), nil
+}
+
+func addHeadersToRequest(request *http.Request, cfg Config, incomingHeaders http.Header) {
+	// 1. Устанавливаем резервный API-ключ из конфигурации.
+	if cfg.ApiKey != "" {
+		request.Header.Set("Authorization", cfg.ApiKey)
+	}
+
+	// 2. Пересылаем только разрешённые заголовки.
+	for _, headerName := range cfg.ForwardHeaders {
+		values := incomingHeaders.Values(headerName)
+		if len(values) == 0 {
+			continue
+		}
+
+		// Не заменяем резервное значение пустым заголовком.
+		var nonEmptyValues []string
+		for _, value := range values {
+			if strings.TrimSpace(value) != "" {
+				nonEmptyValues = append(nonEmptyValues, value)
+			}
+		}
+
+		if len(nonEmptyValues) > 0 {
+			request.Header.Del(headerName)
+			for _, value := range nonEmptyValues {
+				request.Header.Add(headerName, value)
+			}
+		}
+	}
+}
+
+func addUserHeadersToRequest(request *http.Request, cfg Config) {
+
+	for name, value := range cfg.UserHeaders {
+		request.Header.Set(name, value)
+	}
+
 }

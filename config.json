@@ -1,7 +1,18 @@
 {
-    "erp_tool_url": "http://172.16.2.100/anon_mk/hs/ai/mcpTools",
-    "erp_call_url": "http://172.16.2.100/anon_mk/hs/ai/mcpCall",
-    "http_host": "127.0.0.1",
-    "http_port": 40242,
-	"disable_localhost_protection": true
+	"erp_tool_url": "http://172.16.2.100/anon_mk/hs/ai/mcpTools",
+	"erp_call_url": "http://172.16.2.100/anon_mk/hs/ai/mcpCall",
+	"http_host": "127.0.0.1",
+	"http_port": 40242,
+	"disable_localhost_protection": true,
+	"user_headers": {
+		"X-ERP-User-Groups": "%D0%9F%D0%BE%D0%BB%D0%BD%D1%8B%D0%B5%20%D0%BF%D1%80%D0%B0%D0%B2%D0%B0%20ChatGPT",
+		"X-Erp-User-Group-ids": "8856B66F-CFF0-497A-848D-B86A15B284AB",
+		"X-ERP-User-ID": "ChatGPTUser"
+	},
+	"forward_headers": [
+		"X-ERP-User-Groups",
+		"X-Erp-User-Group-ids",
+		"X-ERP-User-ID",
+		"Authorization"
+	]
 }
